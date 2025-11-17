@@ -1,11 +1,10 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const Pengguna = require("../models/user.model");
 const Resep = require("../models/resep.model");
 const Bahan = require("../models/bahan.model"); 
 const Langkah = require("../models/langkah.model");
 
-exports.getAllResep = async(req, res) => {
+const getAllResep = async(req, res) => {
     try{
         const resep = await Resep.findAll({
             include : [Bahan, Langkah],
@@ -17,7 +16,7 @@ exports.getAllResep = async(req, res) => {
     }
 };
 
-exports.getResepById = async (req, res) => {
+const getResepById = async (req, res) => {
   try {
     const { id } = req.params;
     const resep = await Resep.findByPk(id, {
@@ -34,9 +33,8 @@ exports.getResepById = async (req, res) => {
   }
 };
 
-exports.createResep = async (req, res) => {
-  const { judul, deskripsi,waktu_masak,porsi,foto, is_favorit, bahan, langkah,user_id } =
-    req.body;
+const createResep = async (req, res) => {
+  const { judul, deskripsi,waktu_masak,porsi,foto, is_favorit, bahan, langkah,user_id } = req.body;
 
   try {
     const newResep = await Resep.create({
@@ -80,17 +78,25 @@ exports.createResep = async (req, res) => {
   }
 };
 
-exports.updateResep = async (req, res) => {
+const updateResep = async (req, res) => {
   const { id } = req.params;
-  const { judul, deskripsi,waktu_masak,porsi,foto, is_favorit, bahan, langkah,user_id } =
-    req.body;
+  const { judul, deskripsi,waktu_masak,porsi,foto, is_favorit, bahan, langkah,user_id } = req.body;
 
   try {
     const resep = await Resep.findByPk(id);
     if (!resep) return res.status(404).json({ message: "Resep tidak ditemukan" });
 
     // Update data resep utama
-    await resep.update({ judul, deskripsi,waktu_masak,porsi,foto,is_favorit, bahan, langkah, user_id});
+    await resep.update({ 
+      judul, 
+      deskripsi,
+      waktu_masak,
+      porsi,
+      foto,
+      is_favorit, 
+      bahan, 
+      langkah, 
+      user_id});
 
     // Hapus bahan & langkah lama, lalu buat ulang
     await Bahan.destroy({ where: { resep_id: id } });
@@ -125,7 +131,7 @@ exports.updateResep = async (req, res) => {
   }
 };
 
-exports.deleteResep = async (req, res) => {
+const deleteResep = async (req, res) => {
   try {
     const { id } = req.params;
     const resep = await Resep.findByPk(id);
@@ -139,7 +145,7 @@ exports.deleteResep = async (req, res) => {
   }
 };
 
-exports.toggleFavorit = async (req, res) => {
+const toggleFavorit = async (req, res) => {
   try {
     const { id } = req.params;
     const resep = await Resep.findByPk(id);
@@ -158,4 +164,13 @@ exports.toggleFavorit = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Gagal mengubah status favorit", error });
   }
+};
+
+module.exports = {
+  getAllResep,
+  getResepById,
+  createResep,
+  updateResep,
+  deleteResep,
+  toggleFavorit,
 };

@@ -1,12 +1,13 @@
 const express = require("express");
-const { getAllResep, getResepById, createResep, updateResep, deleteResep, toggleFavorit, } = require("../controllers/resep.controller");
+const resepController = require("../controllers/resep.controller");
 const router = express.Router();
+const authenticateToken = require("../middlewares/authenticateToken");
 
-router.get("/", getAllResep);
-router.get("/:id", getResepById);
-router.post("/", createResep);
-router.put("/:id", updateResep);
-router.delete("/:id", deleteResep);
-router.patch("/:id/favorit", toggleFavorit);
+router.get("/", authenticateToken,resepController.getAllResep);
+router.get("/:id",authenticateToken, resepController.getResepById);
+router.post("/", authenticateToken, resepController.createResep);
+router.put("/:id",authenticateToken, resepController.updateResep);
+router.delete("/:id",authenticateToken, resepController.deleteResep);
+router.patch("/:id/favorit", authenticateToken, resepController.toggleFavorit);
 
 module.exports = router;
