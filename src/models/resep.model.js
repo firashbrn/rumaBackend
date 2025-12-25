@@ -1,9 +1,9 @@
-const { DataTypes } = require("sequelize");
+﻿const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
 const Pengguna = require("./user.model");
 
 const Resep = sequelize.define ("Resep",{
-    resep_id :{
+    id :{
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
@@ -20,32 +20,28 @@ const Resep = sequelize.define ("Resep",{
         type: DataTypes.STRING(150),
         allowNull: false,
     },
-    deskripsi:{
-        type : DataTypes.TEXT,
-        allowNull: true,
-    },
     foto :{
         type: DataTypes.STRING(255),
         allowNull: true,
     },
     waktu_masak :{
-        type:DataTypes.STRING(50),
+        type:DataTypes.INTEGER(50),
         allowNull:true,
     },
     porsi:{
-        type: DataTypes.STRING(50),
+        type: DataTypes.INTEGER(50),
         allowNull: true,
     },
     is_favorit:{
-        type: DataTypes.BOOLEAN,
+        type: DataTypes.TINYINT,
         defaultValue : true,
     },
-    created_at: {
+    createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
     underscored: true,
      },
-    updated_at: {
+    updatedAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
     underscored: true,

@@ -1,19 +1,30 @@
-const bcrypt = require("bcryptjs");
+﻿const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Resep = require("../models/resep.model");
 const Bahan = require("../models/bahan.model"); 
 const Langkah = require("../models/langkah.model");
+const { Op } = require("sequelize");
 
-const getAllResep = async(req, res) => {
-    try{
-        const resep = await Resep.findAll({
-            include : [Bahan, Langkah],
-            order : [["resep_id", "DESC"]],
-        });
-        res.status(200).json(resep);
-    } catch (error){
-        res.status(500).json({message:"Gagal mengambil data resep", error});
+const getAllResep = async (req, res) => {
+  try {
+    const { search } = req.query;
+
+    const whereClause = {};
+    if (search) {
+      whereClause.judul = { [Op.like]: `%${search}%` };
     }
+
+    const resep = await Resep.findAll({
+      where: whereClause,
+      include: [Bahan, Langkah],
+      order: [["id", "DESC"]],
+    });
+
+    res.status(200).json(resep);
+  } catch (error) {
+    console.error("getAllResep error:", error);
+    res.status(500).json({ message: "Gagal mengambil data resep", error });
+  }
 };
 
 const getResepById = async (req, res) => {
@@ -34,39 +45,42 @@ const getResepById = async (req, res) => {
 };
 
 const createResep = async (req, res) => {
-  const { judul, deskripsi,waktu_masak,porsi,foto, is_favorit, bahan, langkah,user_id } = req.body;
+const { judul, waktu_masak, porsi, foto, is_favorit, bahan, langkah } = req.body;
+const userId = req.user.user_id; 
 
   try {
     const newResep = await Resep.create({
       judul,
-      deskripsi,
       waktu_masak,
       porsi,
       foto,
       is_favorit,
-      user_id,
+      user_id: userId,   
     });
 
-    // Tambahkan bahan
+    
     if (Array.isArray(bahan) && bahan.length > 0) {
       await Promise.all(
         bahan.map((b) =>
           Bahan.create({
-            resep_id: newResep.resep_id,
+            resep_id: newResep.id,
             nama_bahan: b.nama_bahan,
+            jumlah: b.jumlah, 
+            satuan: b.satuan
           })
         )
       );
     }
 
-    // Tambahkan langkah
+    
     if (Array.isArray(langkah) && langkah.length > 0) {
       await Promise.all(
         langkah.map((l, index) =>
           Langkah.create({
-            resep_id: newResep.resep_id,
+            resep_id: newResep.id,
             urutan: index + 1,
             deskripsi: l.deskripsi,
+            foto_langkah: l.foto_langkah || null,
           })
         )
       );
@@ -80,16 +94,15 @@ const createResep = async (req, res) => {
 
 const updateResep = async (req, res) => {
   const { id } = req.params;
-  const { judul, deskripsi,waktu_masak,porsi,foto, is_favorit, bahan, langkah,user_id } = req.body;
+  const { judul,waktu_masak,porsi,foto, is_favorit, bahan, langkah,user_id } = req.body;
 
   try {
     const resep = await Resep.findByPk(id);
     if (!resep) return res.status(404).json({ message: "Resep tidak ditemukan" });
 
-    // Update data resep utama
+    
     await resep.update({ 
       judul, 
-      deskripsi,
       waktu_masak,
       porsi,
       foto,
@@ -98,7 +111,7 @@ const updateResep = async (req, res) => {
       langkah, 
       user_id});
 
-    // Hapus bahan & langkah lama, lalu buat ulang
+    
     await Bahan.destroy({ where: { resep_id: id } });
     await Langkah.destroy({ where: { resep_id: id } });
 
@@ -108,6 +121,8 @@ const updateResep = async (req, res) => {
           Bahan.create({
             resep_id: id,
             nama_bahan: b.nama_bahan,
+            jumlah: b.jumlah, 
+            satuan: b.satuan
           })
         )
       );
@@ -120,6 +135,7 @@ const updateResep = async (req, res) => {
             resep_id: id,
             urutan: index + 1,
             deskripsi: l.deskripsi,
+            foto_langkah: l.foto_langkah || null,
           })
         )
       );
@@ -166,6 +182,20 @@ const toggleFavorit = async (req, res) => {
   }
 };
 
+const getFavoritResep = async (req, res) => {
+  try {
+    const userId = req.user.user_id;
+    const resep = await Resep.findAll({
+      where: { user_id: userId, is_favorit: 1 },
+      include: [Bahan, Langkah],
+      order: [["id", "DESC"]],
+    });
+    res.status(200).json(resep);
+  } catch (error) {
+    res.status(500).json({ message: "Gagal mengambil resep favorit", error });
+  }
+};
+
 module.exports = {
   getAllResep,
   getResepById,
@@ -173,4 +203,5 @@ module.exports = {
   updateResep,
   deleteResep,
   toggleFavorit,
+  getFavoritResep,
 };

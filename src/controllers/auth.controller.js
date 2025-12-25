@@ -1,13 +1,17 @@
+﻿
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Pengguna = require("../models/user.model");
-const dotenv = require('dotenv');
+const dotenv = require("dotenv");
 dotenv.config();
 
-// 🔹 REGISTER USER
 exports.register = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, username } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email dan password wajib diisi" });
+    }
 
     const existingUser = await Pengguna.findOne({ where: { email } });
     if (existingUser) {
@@ -15,25 +19,36 @@ exports.register = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const username = email.split("@")[0];
 
-    await Pengguna.create({
-      username,
+    const newUser = await Pengguna.create({
+      username: username || email.split("@")[0],
       email,
       password: hashedPassword,
     });
 
-    res.status(201).json({ message: "Registrasi berhasil" });
+    return res.status(201).json({
+      message: "Registrasi berhasil",
+      user: {
+        user_id: newUser.user_id,
+        username: newUser.username,
+        email: newUser.email,
+      },
+    });
   } catch (error) {
     console.error("Error register:", error);
-    res.status(500).json({ message: "Terjadi kesalahan server", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Terjadi kesalahan server", error: error.message });
   }
 };
 
-// 🔹 LOGIN USER
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.body; 
+
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email dan password wajib diisi" });
+    }
 
     const user = await Pengguna.findOne({ where: { email } });
     if (!user) {
@@ -47,17 +62,25 @@ exports.login = async (req, res) => {
 
     const token = jwt.sign(
       { user_id: user.user_id, email: user.email },
-      "rahasiaSuperAman",
+      process.env.TOKEN_SECRET,
       { expiresIn: "1d" }
     );
 
-    res.status(200).json({
-      status : "Login Berhasil",
-      email: user.email,
+    return res.status(200).json({
+      status: "Success",
+      message: "Login berhasil",
       token,
+      user: {
+        user_id: user.user_id,
+        username: user.username,
+        email: user.email,
+        foto_profil: user.foto_profil,
+      },
     });
   } catch (error) {
     console.error("Error login:", error);
-    res.status(500).json({ message: "Terjadi kesalahan server", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "Terjadi kesalahan server", error: error.message });
   }
 };

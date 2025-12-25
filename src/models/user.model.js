@@ -1,4 +1,4 @@
-
+﻿
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
 
@@ -20,6 +20,11 @@ const Pengguna = sequelize.define("Pengguna", {
   password: {
     type: DataTypes.STRING(255),
     allowNull: false,
+  },
+  foto_profil: { 
+    type: DataTypes.STRING(255),
+    allowNull: true,
+    defaultValue: null,
   },
   created_at: {
     type: DataTypes.DATE,

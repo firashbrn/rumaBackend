@@ -1,4 +1,4 @@
-const { DataTypes } = require("sequelize");
+﻿const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
 const Resep = require('./resep.model');
 
@@ -12,7 +12,7 @@ const Bahan = sequelize.define("Bahan", {
         type: DataTypes.INTEGER,
         references:{
             model: Resep,
-            key: "resep_id",
+            key: "id",
         },
         onDelete: "CASCADE",
     },
@@ -20,8 +20,16 @@ const Bahan = sequelize.define("Bahan", {
         type:DataTypes.STRING(255),
         allowNull:false,
     },
+     jumlah:{
+        type:DataTypes.INTEGER(50),
+        allowNull:false,
+    },
+    satuan: {
+    type: DataTypes.STRING(50),
+    allowNull: false,
+    },
     },{
-    tableName: "bahan_resep",
+    tableName: "bahan",
     timestamps: false,
 });
 

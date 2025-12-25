@@ -1,4 +1,4 @@
-const { DataTypes } = require("sequelize");
+﻿const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
 const Resep = require('./resep.model');
 
@@ -12,7 +12,7 @@ const Langkah = sequelize.define("Langkah", {
         type: DataTypes.INTEGER,
         references:{
             model: Resep,
-            key: "resep_id",
+            key: "id",
         },
         onDelete: "CASCADE",
     },
@@ -25,10 +25,6 @@ const Langkah = sequelize.define("Langkah", {
         allowNull:false,
     },
      foto_langkah:{
-        type:DataTypes.STRING(255),
-        allowNull:true,
-    },
-     video_langkah:{
         type:DataTypes.STRING(255),
         allowNull:true,
     },

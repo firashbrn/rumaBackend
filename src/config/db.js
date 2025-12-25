@@ -1,4 +1,4 @@
-// src/config/db.js
+﻿
 const { Sequelize } = require("sequelize");
 require("dotenv").config();
 
@@ -16,7 +16,7 @@ const sequelize = new Sequelize(
 (async () => {
   try {
     await sequelize.authenticate();
-    console.log("✅ Koneksi ke database berhasil!");
+    
   } catch (error) {
     console.error("❌ Gagal konek ke database:", error.message);
   }
